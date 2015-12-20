@@ -1,0 +1,5 @@
+<?php
+
+{% for k, v in dokuwiki_config | dictsort %}
+$conf['{{ k }}'] = {{ v if (v is number or k in ['fmode', 'dmode']) else "'%s'" | format(v) }};
+{% endfor %}

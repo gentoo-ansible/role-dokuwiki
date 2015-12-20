@@ -1,0 +1,83 @@
+# {{ ansible_managed }}
+
+server {
+	listen		[::]:443 ssl;
+	server_name	{{ dokuwiki_domain }};
+
+	root		{{ dokuwiki_www_dir }};
+
+	access_log	/var/log/nginx/{{ dokuwiki_name }}.access.log main;
+	error_log	/var/log/nginx/{{ dokuwiki_name }}.error.log warn;
+
+	client_max_body_size {{ dokuwiki_upload_max_size }}M;
+
+{% if dokuwiki_ssl_cert %}
+	ssl_certificate		{{ dokuwiki_ssl_cert }};
+	ssl_certificate_key	{{ dokuwiki_ssl_key }};
+
+{% endif %}
+	# Enable HSTS Policy
+	add_header Strict-Transport-Security "max-age=315360000";
+
+	index doku.php index.php index.html;
+
+	# Do not log requests to favicon.ico and robots.txt
+	include incl/handle_favicon.conf;
+	include incl/handle_robots.conf;
+
+	location ~ ^/(?:bin/|conf/|inc/|install.php) {
+		deny all;
+	}
+
+	# Serve static files upon request of DokuWiki directly (X-Accel-Redirect).
+	# Note: DokuWiki sends redirects like //cache/..., //media/... o.O
+	location ~ ^/+(?:cache|media) {
+		internal;
+		root {{ dokuwiki_data_dir }};
+	}
+
+	# Set long Expires header on static assets.
+	location ~ ^/lib/.*\.(?:js|css|png|gif|ico)$ {
+		expires 7d;
+	}
+
+	location / {
+		try_files $uri $uri/ @dokuwiki;
+	}
+
+	location @dokuwiki {
+		rewrite ^/_media/(.*) /lib/exe/fetch.php?media=$1 last;
+		rewrite ^/_detail/(.*) /lib/exe/detail.php?media=$1 last;
+		rewrite ^/_export/([^/]+)/(.*) /doku.php?do=export_$1&id=$2 last;
+		rewrite ^/(.*) /doku.php?id=$1&$args last;
+	}
+
+	location ~ \.php$ {
+		try_files $uri $uri/ /doku.php;
+
+		fastcgi_split_path_info ^(.+\.php)(.*)$;
+
+		include				incl/fastcgi_params.conf;
+{% if dokuwiki_chroot_enabled %}
+{% set _www_dir = '/' + dokuwiki_www_dir | relpath(_prefix) %}
+
+		# Ajust paths for chroot jail.
+		fastcgi_param		DOCUMENT_ROOT	{{ _www_dir }};
+		fastcgi_param		SCRIPT_FILENAME {{ _www_dir }}/$fastcgi_script_name;
+{% endif %}
+
+		fastcgi_keep_conn	on;
+{% if php_fpm_port is defined and php_fpm_port > 0 %}
+		fastcgi_pass		127.0.0.1:{{ php_fpm_port }};
+{% else %}
+		fastcgi_pass		unix:{{ php_fpm_socket.path }};
+{% endif %}
+	}
+}
+
+server {
+	listen			[::]:80;
+	server_name		{{ dokuwiki_domain }};
+
+	rewrite			^ https://$server_name$request_uri? permanent;
+}

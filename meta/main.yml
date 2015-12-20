@@ -1,0 +1,29 @@
+---
+galaxy_info:
+  author: Jakub Jirutka
+  company: CTU in Prague
+  description: DokuWiki
+  license: MIT
+  min_ansible_version: 1.8
+  platforms:
+    - name: Gentoo
+  categories:
+    - web
+
+dependencies:
+  - role: php-fpm-pool
+    php_fpm_pool_name: "{{ dokuwiki_name }}"
+    php_fpm_user: "{{ dokuwiki_user }}"
+    php_fpm_group: "{{ dokuwiki_group }}"
+    php_fpm_chroot_enabled: "{{ dokuwiki_chroot_enabled }}"
+    php_fpm_chroot_dir: "{{ dokuwiki_base_dir }}"
+    php_fpm_logs_dir: "{{ dokuwiki_logs_dir }}"
+    php_fpm_temp_dir: "{{ dokuwiki_data_dir }}/tmp"
+    php_fpm_upload_max_size: "{{ dokuwiki_upload_max_size }}"
+    php_fpm_memory_limit: 32
+    php_fpm_ini_overrides:
+      output_buffering: false
+    php_fpm_disable_functions: [
+      curl_exec, curl_multi_exec, eval, passthru, pcntl_exec,
+      popen, proc_open, shell_exec, show_source, system, exec
+    ]

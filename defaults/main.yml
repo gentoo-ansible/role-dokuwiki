@@ -1,0 +1,104 @@
+---
+# URL of the DokuWiki repository to clone.
+dokuwiki_source_url: https://github.com/splitbrain/dokuwiki.git
+
+# Revision (tag or branch) to checkout.
+dokuwiki_source_rev: stable
+
+
+# Name of this Dokuwiki instance (for naming directories, init script, ...).
+dokuwiki_name: dokuwiki
+
+# User to run Dokuwiki (will be created if not exist).
+dokuwiki_user: "{{ dokuwiki_name }}"
+
+# Group to run Dokuwiki (will be created if not exist).
+dokuwiki_group: "{{ dokuwiki_user }}"
+
+#
+# DokuWiki
+#
+
+# Initial password for the admin user (will be used only for fresh install).
+dokuwiki_initial_admin_password: admin
+
+# Initial configuration (will be used only for fresh install).
+dokuwiki_config:
+  savedir: "/{{ dokuwiki_data_dir | relpath(_prefix) }}"
+  useacl: 1
+  superuser: '@admin'
+  disableactions: register
+  dmode: '0750'
+  fmode: '0640'
+  passcrypt: 'bcrypt'
+  dformat: '%Y-%m-%d %H:%M'
+  start: 'index'
+  userewrite: 1  # web-server rewrite
+  useslash: 1
+  sepchar: '-'
+  xsendfile: 3  # use nginx header
+  jpg_quality: 90
+
+#
+# Web server
+#
+
+# Whether to setup nginx as a reverse proxy for Roundcube.
+dokuwiki_nginx_enabled: true
+
+# Domain name on which this Roundcube instance will be accessible.
+dokuwiki_domain:
+
+# Path of the target file with ownCloud "virtual host" configuration.
+dokuwiki_nginx_path: "/etc/nginx/sites/{{ dokuwiki_name }}.conf"
+
+# Path of the TLS/SSL certificate for the domain.
+dokuwiki_ssl_cert:
+
+# Path of the TLS/SSL private key.
+dokuwiki_ssl_key:
+
+#
+# PHP
+#
+
+# Maximal size of a file that can be uploaded via web interface (in megabytes).
+dokuwiki_upload_max_size: 32
+
+# Path and permissions of the FastCGI socket
+php_fpm_socket:
+  path: "/run/{{ dokuwiki_name }}/fastcgi.sock"
+  group: nginx
+  mode: '0660'
+
+#
+# Paths
+#
+
+# Whether to run Dokuwiki in chroot jail.
+dokuwiki_chroot_enabled: true
+
+# The base directory for Dokuwiki. If chroot is enabled, then this will be
+# also the chroot directory.
+dokuwiki_base_dir: "/opt/{{ dokuwiki_name }}"
+
+# Path of the document root, i.e. where Dokuwiki files will be installed.
+# If chroot is enabled then it MUST be inside the chroot directory (but specify
+# full path here).
+dokuwiki_www_dir: "{{ dokuwiki_base_dir }}/www"
+
+# Path of the data (savedir) directory.
+# If chroot is enabled then it MUST be inside the chroot directory (but specify
+# full path here).
+dokuwiki_data_dir: "{{ dokuwiki_base_dir }}/data"
+
+# Path of the conf directory.
+# If chroot is enabled then it MUST be inside the chroot directory (but specify
+# full path here).
+dokuwiki_conf_dir: "{{ dokuwiki_base_dir }}/conf"
+
+# Path of the directory to store logs.
+# If chroot is enabled then it MUST be inside the chroot directory (but specify
+# full path here).
+# Default is /var/log/dokuwiki, or {{dokuwiki_base_dir}}/log on chroot env.
+dokuwiki_logs_dir: "{{ dokuwiki_base_dir + '/log' if dokuwiki_chroot_enabled else '/var/log/dokuwiki' }}"

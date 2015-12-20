@@ -1,0 +1,29 @@
+---
+- include: install.yml tags=dokuwiki:install
+
+- include: initialize.yml tags=dokuwiki:install
+  when: _dokuwiki_init | changed
+
+- include: configure.yml tags=dokuwiki:config
+
+  # Trigger handlers now to avoid unnecessary restarts.
+- meta: flush_handlers
+
+- name: enable and start dokuwiki
+  service: >
+    name={{ dokuwiki_name }}
+    enabled=yes
+    state=started
+  tags: dokuwiki:config
+
+- name: show message
+  debug: >
+    msg="Open https://{{ dokuwiki_domain }}, login as 'admin' with password
+    '{{ dokuwiki_initial_admin_password }}', change the admin password and e-mail,
+    and configure your new DokuWiki instance."
+  when: _dokuwiki_init | changed
+
+- name: "ensure that https://{{ dokuwiki_domain }} returns HTTP 200"
+  sudo: no
+  local_action: uri url=https://{{ dokuwiki_domain }} status_code=200 timeout=5
+  tags: dokuwiki:check

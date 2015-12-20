@@ -1,0 +1,34 @@
+---
+- name: copy seed data to the target data directory
+  shell: |
+    cp -R -- "{{ dokuwiki_www_dir }}"/data/* "{{ dokuwiki_data_dir }}/"
+    chown -R "{{ dokuwiki_user }}:{{ dokuwiki_group }}" -- "{{ dokuwiki_data_dir }}"
+
+- name: hash initial admin password
+  shell: |
+    openssl passwd -1 -stdin -noverify <<< '{{ dokuwiki_initial_admin_password }}'
+    creates={{ dokuwiki_conf_dir }}/users.auth.php
+  register: _admin_password_hash
+
+- name: create admin user
+  template: >
+    force=no
+    src=users.auth.php.j2
+    dest={{ dokuwiki_conf_dir }}/users.auth.php
+    owner={{ dokuwiki_user }}
+    group={{ dokuwiki_group }}
+    mode=0640
+  when: _admin_password_hash | changed
+
+- name: initialize configuration
+  template: >
+    force=no
+    src={{ item }}.j2
+    dest={{ dokuwiki_conf_dir }}/{{ item }}
+    owner={{ dokuwiki_user }}
+    group={{ dokuwiki_group }}
+    mode=0640
+  with_items:
+    - acl.auth.php
+    - local.php
+    - plugins.local.php

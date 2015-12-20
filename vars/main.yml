@@ -1,0 +1,15 @@
+---
+_prefix: "{{ dokuwiki_base_dir if dokuwiki_chroot_enabled | bool else '/' }}"
+
+# Paths to exclude from the DokuWiki source repo.
+dokuwiki_sparsecheckout:
+  - '/*'
+  - '!/.gitattributes'
+  - '!/.gitignore'
+  - '!/.editorconfig'
+  - '!/.travis.yml'
+  - '!/composer.json'
+  - '!/composer.lock'
+  - '!/_test'
+  - '!/_cs'
+  - '!/lib/plugins/testing'

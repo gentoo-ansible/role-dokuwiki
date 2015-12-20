@@ -1,0 +1,8 @@
+---
+- name: restart dokuwiki
+  service: >
+    name={{ dokuwiki_name }}
+    state=restarted
+
+- name: restart nginx
+  service: name=nginx state=restarted

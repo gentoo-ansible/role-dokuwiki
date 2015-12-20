@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+
+{{ dokuwiki_logs_dir }}/*.log {
+	missingok
+	compress
+	su {{ dokuwiki_user }} {{ dokuwiki_group }}
+	delaycompress
+}

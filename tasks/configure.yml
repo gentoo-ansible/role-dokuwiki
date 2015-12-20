@@ -1,0 +1,29 @@
+---
+- name: configure inc/preload.php
+  template: >
+    src=preload.php.j2
+    dest={{ dokuwiki_www_dir }}/inc/preload.php
+    owner=root group=root mode=0644
+
+- name: configure logrotate
+  template: >
+    src=logrotate.j2
+    dest=/etc/logrotate.d/{{ dokuwiki_name }}
+    owner=root group=root mode=0644
+  ignore_errors: yes
+
+- name: configure nginx site
+  template: >
+    src=nginx.conf.j2
+    dest={{ dokuwiki_nginx_path }}
+    owner=root group=root mode=0644
+  notify: restart nginx
+  when: dokuwiki_nginx_enabled | bool
+
+- name: add nginx to dokuwiki group
+  user: >
+    name=nginx
+    groups={{ dokuwiki_group }}
+    append=yes
+  notify: restart nginx
+  when: dokuwiki_nginx_enabled | bool
