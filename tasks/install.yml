@@ -48,3 +48,10 @@
 - name: symlink dist configs to the conf directory
   shell: |
     ln -rs "{{ dokuwiki_www_dir }}"/conf/* "{{ dokuwiki_conf_dir }}/" || true
+
+- name: install plugins from git repositories
+  git: >
+    repo={{ item.url }}
+    version={{ item.version | default('HEAD') }}
+    dest={{ dokuwiki_www_dir }}/lib/plugins/{{ item.name }}
+  with_items: dokuwiki_plugins

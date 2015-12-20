@@ -5,6 +5,11 @@ dokuwiki_source_url: https://github.com/splitbrain/dokuwiki.git
 # Revision (tag or branch) to checkout.
 dokuwiki_source_rev: stable
 
+# List of DokuWiki plugins to install.
+# Expects list of hashes with 'name', 'url' and 'version' (default is HEAD).
+# Currently supports installing only from git repository.
+dokuwiki_plugins: []
+
 
 # Name of this Dokuwiki instance (for naming directories, init script, ...).
 dokuwiki_name: dokuwiki
